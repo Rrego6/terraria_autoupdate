@@ -50,6 +50,7 @@ function get_local_server_version {
 
 function start_terraria {
 	tmux new-session -d -s "$terraria_session_name" "$terraria_executable_full" -config "$config_path"
+	sleep 10 #todo: query server to check tmux buffer (repeatedly?) for ": Server started" instead.
 }
 
 function kill_terraria {
@@ -60,6 +61,7 @@ function kill_terraria {
 	tmux send-keys -t "$terraria_session_name:0" "exit" Enter
 	tmux kill-session -t "$terraria_session_name"
 }
+
 
 
 function terraria_warn_shutdown {
@@ -74,6 +76,13 @@ function update_terraria {
 	local server_filename=$(get_official_server_filename)
 	local server_version=$(get_official_server_version $server_filename)
 	local local_version=$(get_local_server_version)
+
+	#in case server exists, but has not been started
+	if [ -z "$local_version" ]; then
+		start_terraria
+		local_version=$(get_local_server_version)
+	fi
+
 	if [[ "$local_version" == "$server_version" ]]; then
 		echo "no update needed"
 		return
