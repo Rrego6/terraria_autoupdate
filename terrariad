@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # bash
 # curl
 # unzip
@@ -6,9 +6,10 @@
 
 config_path="/home/pie/terraria.config"
 terraria_dir_path="/home/pie/terraria-server"
+
+
 temp_dir="/var/tmp"
 terraria_executable_relative='Linux/TerrariaServer.bin.x86_64'
-
 terraria_executable_full="$terraria_dir_path/$terraria_executable_relative"
 terraria_session_name='terraria-server'
 terraria_download_filename='terraria-server.zip'
@@ -50,7 +51,7 @@ function get_local_server_version {
 
 function start_terraria {
 	tmux new-session -d -s "$terraria_session_name" "$terraria_executable_full" -config "$config_path"
-	sleep 10 #todo: query server to check tmux buffer (repeatedly?) for ": Server started" instead.
+	#todo: check tmux buffer (repeatedly?) for ": Server started" instead.
 }
 
 function kill_terraria {
@@ -80,6 +81,7 @@ function update_terraria {
 	#in case server exists, but has not been started
 	if [ -z "$local_version" ]; then
 		start_terraria
+		sleep 10  #todo: replace with buffer check
 		local_version=$(get_local_server_version)
 	fi
 
@@ -105,9 +107,12 @@ case "$1" in
 	exit | kill | stop) 
 		kill_terraria
 		;;
-	start | update)
+	update)
 		initial_validation
 		update_terraria
+		;;
+	start)
+		start_terraria
 		;;
 	**)
 		echo "Usage: $0  [stop | update | start | help]"
