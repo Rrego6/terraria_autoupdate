@@ -1,0 +1,12 @@
+[Unit]
+Description=server daemon for terraria
+
+[Service]
+Type=forking
+User=root
+KillMode=none
+ExecStart=/home/pie/terrariad start
+ExecStop=/home/pie/terrarid stop
+
+[Install]
+WantedBy=multi-user.target

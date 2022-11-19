@@ -1,0 +1,106 @@
+#!/bin/bash
+# bash
+# curl
+# unzip
+# tmux
+
+config_path="/home/pie/terraria.config"
+terraria_dir_path="/home/pie/terraria-server"
+temp_dir="/var/tmp"
+terraria_executable_relative='Linux/TerrariaServer.bin.x86_64'
+
+terraria_executable_full="$terraria_dir_path/$terraria_executable_relative"
+terraria_session_name='terraria-server'
+terraria_download_filename='terraria-server.zip'
+
+function initial_validation {
+	if [ ! -f "$config_path" ]; then
+		echo "config_path must be set!"
+	fi
+}
+
+
+function get_official_server_filename {
+	local json_output=$(curl  --silent https://terraria.org/api/get/dedicated-servers-names)
+	result=$(echo $json_output | grep -Po '(?<=")[\w.-]+(?=")'  - | head -n 1)
+	echo $result
+}
+
+#param server_filename
+function get_official_server_version {
+	local server_filename=$1
+	result=$(echo $server_filename | grep -Po '(?<=server-).+(?=\.zip)'  - | head -n 1)
+	echo $result
+}
+
+function get_local_server_version {
+	tmux has-session -t "$terraria_session_name:0" 2>/dev/null
+	if [ $? != 0 ]; then
+		return
+	fi
+	tmux send-keys -t "$terraria_session_name:0" "version" Enter
+	tmux capture-pane -t "$terraria_session_name:0"
+	local buffer=`tmux show-buffer`
+	local version_with_periods=$(echo $buffer | grep -Po "(?<=Server v)[0-9.]+(?=\s)" test | head -1)
+	result=$(echo $version_with_periods | tr -d '.')
+	echo $result 
+}
+
+
+
+function start_terraria {
+	tmux new-session -d -s "$terraria_session_name" "$terraria_executable_full" -config "$config_path"
+}
+
+function kill_terraria {
+	tmux has-session -t "$terraria_session_name:0" 2>/dev/null
+	if [ $? != 0 ]; then
+		return
+	fi
+	tmux send-keys -t "$terraria_session_name:0" "exit" Enter
+	tmux kill-session -t "$terraria_session_name"
+}
+
+
+function terraria_warn_shutdown {
+	tmux has-session -t "$terraria_session_name:0" 2>/dev/null
+	if [ $? != 0 ]; then
+		return
+	fi
+	tmux send-keys -t $terraria_server_session:0 "say shutting down in 2 minutes" Enter
+}
+
+function update_terraria {
+	local server_filename=$(get_official_server_filename)
+	local server_version=$(get_official_server_version $server_filename)
+	local local_version=$(get_local_server_version)
+	if [[ "$local_version" == "$server_version" ]]; then
+		echo "no update needed"
+		return
+	fi
+
+	curl  --silent -o "$temp_dir/$terraria_download_filename" "https://terraria.org/api/download/pc-dedicated-server/$server_filename"
+	unzip -q -o -d "$temp_dir/terraria_dir" "$temp_dir/$terraria_download_filename"
+	terraria_internal_folder=$(ls "$temp_dir/terraria_dir") #may be a version name like 1449
+
+	kill_terraria
+	rm -r "$temp_dir/server.old"
+	mv "$terraria_dir_path" "$temp_dir/server.old"
+	mv "$temp_dir/terraria_dir/$terraria_internal_folder" $terraria_dir_path
+	chmod +x "$terraria_executable_full"
+
+	start_terraria
+}
+
+case "$1" in
+	exit | kill | stop) 
+		kill_terraria
+		;;
+	start | update)
+		initial_validation
+		update_terraria
+		;;
+	**)
+		echo "Usage: $0  [stop | update | start | help]"
+esac
+
