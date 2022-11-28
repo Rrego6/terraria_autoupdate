@@ -15,7 +15,7 @@ These commands should work well with a systemd service and timer to automaticall
 ## setup
 - tmux,curl, and unzip must be available in the path
 - kill any running terraria server, as terrariad will manage spawning it.
-- when running for the first time, use ./terrariad update. This will download and then spawn the insance.
+- when running for the first time, use `./terrariad update`. This will download and then spawn the insance.
 
 in terrariad:
 - config_path must be set to a valid terraria config file. 
