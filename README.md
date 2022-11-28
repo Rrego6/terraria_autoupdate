@@ -3,10 +3,12 @@
 terrariad is a simple script to daemonize the terraria server. It handles starting, stopping, and updating the server. terrariad spawns a named tmux session
 
 ## usage
+```
 ./terrariad start
 ./terrariad update
 ./terrariad stop
 ./terrariad warn
+```
 
 These commands should work well with a systemd service and timer to automatically start,stop, and update the terraria server.
 
