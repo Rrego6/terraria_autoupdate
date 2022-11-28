@@ -1,6 +1,6 @@
 # terraria_autoupdate
 
-terrariad is a simple script to daemonize the terraria server. It handles starting, stopping, and updating the server. terrariad spawns a named tmux session
+`terrariad` is a simple script to daemonize the terraria server. It handles starting, stopping, and updating the server. `terrariad` spawns a named tmux session.
 
 ## usage
 ```
