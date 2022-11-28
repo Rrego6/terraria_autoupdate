@@ -18,8 +18,8 @@ These commands should work well with a systemd service and timer to automaticall
 - when running for the first time, use `./terrariad update`. This will download and then spawn the insance.
 
 in terrariad:
-- config_path must be set to a valid terraria config file. 
-- terraria_dir_path must be set to a valid location
+- `config_path` must be set to a valid terraria config file. 
+- `terraria_dir_path` must be set to a valid location
 
 
 
